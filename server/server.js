@@ -541,11 +541,25 @@ function validateHit(attacker, victim, weaponIdx) {
 // ============================================================
 //  SOCKET.IO CONNECTION HANDLING
 // ============================================================
+// Track total players online
+let totalPlayersOnline = 0;
+
+function updatePlayerCount() {
+  totalPlayersOnline = 0;
+  for (const room of rooms.values()) {
+    totalPlayersOnline += room.players.size;
+  }
+  io.emit('player-count', { count: totalPlayersOnline });
+}
+
 io.on('connection', (socket) => {
   console.log(`[+] ${socket.id} connected`);
 
   // Send room list on connect
   socket.emit('room-list', getRoomList());
+  
+  // Send initial player count
+  socket.emit('player-count', { count: totalPlayersOnline });
   
   // Send current player count
   socket.emit('player-count', { total: totalPlayersOnline });
@@ -605,6 +619,7 @@ io.on('connection', (socket) => {
     io.to(room.code).emit('room-state', getRoomState(room));
     io.to(room.code).emit('chat', { from: 'SYSTEM', msg: `${pState.name} joined` });
     io.emit('room-list', getRoomList());
+    updatePlayerCount(); // Update player count
     updatePlayerCount(); // Update online player count
   });
 
@@ -880,6 +895,7 @@ io.on('connection', (socket) => {
       io.to(code).emit('room-state', getRoomState(room));
     }
     io.emit('room-list', getRoomList());
+    updatePlayerCount(); // Update player count
     updatePlayerCount(); // Update online player count
   }
 });

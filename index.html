@@ -126,13 +126,14 @@ canvas{display:block}
 <canvas id="title-bg"></canvas>
 <h1>COCKBLASTER.FUN</h1>
 <div class="sub">// CYBERPUNK ARENA SHOOTER //</div>
+<div style="font-size:16px;color:#ff00ff;text-shadow:0 0 20px #ff00ff,0 0 40px #ff00ff;margin-bottom:15px;font-weight:bold;letter-spacing:2px">🚀 NOW LIVE ON PUMP FUN 🚀</div>
 <div id="player-count" style="font-size:18px;color:#00ff00;text-shadow:0 0 15px #00ff00;margin-bottom:10px;font-weight:bold">🔴 0 PLAYERS ONLINE</div>
 <input id="name-input" placeholder="ENTER YOUR NAME" maxlength="12">
 <div style="font-size:11px;color:#888;margin:2px 0">GAME MODE</div>
 <div id="mode-select">
-<button class="btn btn-small sel" data-mode="survival">SURVIVAL</button>
+<button class="btn btn-small sel" data-mode="deathmatch">DEATHMATCH</button>
+<button class="btn btn-small" data-mode="team-deathmatch">TEAM DEATHMATCH</button>
 <button class="btn btn-small" data-mode="gungame">GUN GAME</button>
-<button class="btn btn-small" data-mode="zombie">ZOMBIE HORDE</button>
 </div>
 <div style="font-size:11px;color:#888;margin:2px 0">MAP</div>
 <div id="map-select">
@@ -266,6 +267,17 @@ let settingsFrom='title';
 document.getElementById('settings-btn-title').addEventListener('click',()=>{settingsFrom='title';showScreen('settings-screen')});
 document.getElementById('settings-btn-pause').addEventListener('click',()=>{settingsFrom='pause';showScreen('settings-screen')});
 document.getElementById('settings-back').addEventListener('click',()=>{showScreen(settingsFrom==='pause'?'pause-screen':'title-screen')});
+
+// === SOCKET.IO INITIALIZATION ===
+const socket = io();
+
+// Listen for player count updates
+socket.on('player-count', (data) => {
+  const countEl = document.getElementById('player-count');
+  if (countEl) {
+    countEl.textContent = `🔴 ${data.count} PLAYERS ONLINE`;
+  }
+});
 
 // === AUDIO ENGINE ===
 const AC=new(window.AudioContext||window.webkitAudioContext)();
@@ -1246,7 +1258,7 @@ function initSocket(){
 if(typeof io!=='undefined'){
 socket=io();
 socket.on('player-count',(data)=>{
-updatePlayerCountDisplay(data.total);
+updatePlayerCountDisplay(data.count);
 });
 socket.on('player-jump',(data)=>{
 if(!document.getElementById('title-screen').style.display|document.getElementById('title-screen').style.display==='none')
